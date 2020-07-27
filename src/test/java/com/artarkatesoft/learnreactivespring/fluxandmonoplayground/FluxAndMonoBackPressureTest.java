@@ -48,11 +48,11 @@ public class FluxAndMonoBackPressureTest {
                     @Override
                     protected void hookOnNext(Integer value) {
                         System.out.println("Element is " + value);
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            Thread.sleep(500);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
 
                         if (!isDisposed())
                             upstream().request(1);
@@ -80,11 +80,11 @@ public class FluxAndMonoBackPressureTest {
                     @Override
                     protected void hookOnNext(Integer value) {
                         System.out.println("Element is " + value);
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            Thread.sleep(500);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
                         if (value.equals(206)) dispose();
 
                         if (!isDisposed())

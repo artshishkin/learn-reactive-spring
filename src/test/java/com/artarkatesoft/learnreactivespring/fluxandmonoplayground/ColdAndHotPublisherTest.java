@@ -14,10 +14,10 @@ public class ColdAndHotPublisherTest {
     void coldPublisherTest() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Flux<Integer> flux = Flux.range(1, 6)
-                .delayElements(Duration.ofSeconds(1));
+                .delayElements(Duration.ofMillis(100));
         flux.map(i -> "Subscriter 1: " + i).subscribe(System.out::println, null, latch::countDown); //emits values from beginning
 
-        Thread.sleep(2000);
+        Thread.sleep(300);
 
         flux.map(i -> "Subscriter 2: " + i).subscribe(System.out::println);//emits values from beginning
 
@@ -29,14 +29,14 @@ public class ColdAndHotPublisherTest {
     void hotPublisherTest() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Flux<Integer> flux = Flux.range(1, 6)
-                .delayElements(Duration.ofSeconds(1));
+                .delayElements(Duration.ofMillis(100));
 
         ConnectableFlux<Integer> connectableFlux = flux.publish();
         connectableFlux.connect();
 
         connectableFlux.map(i -> "Subscriter 1: " + i).subscribe(System.out::println, null, latch::countDown);
 
-        Thread.sleep(2000);
+        Thread.sleep(300);
 
         connectableFlux.map(i -> "Subscriter 2: " + i).subscribe(System.out::println);//does NOT emit values from beginning
 

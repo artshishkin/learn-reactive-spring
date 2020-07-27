@@ -22,11 +22,13 @@ public class FluxAndMonoCombineTest {
 
     @Test
     void combineUsingMerge_withDelay() {
+        VirtualTimeScheduler.getOrSet();
         Flux<String> flux1 = Flux.just("A", "B", "C").delayElements(Duration.ofSeconds(1));
         Flux<String> flux2 = Flux.just("1", "2", "3").delayElements(Duration.ofSeconds(1));
-        Flux<String> mergeFlux = Flux.merge(flux1, flux2);
-        StepVerifier.create(mergeFlux.log())
+        Flux<String> mergeFlux = Flux.merge(flux1, flux2).log();
+        StepVerifier.withVirtualTime(() -> mergeFlux)
                 .expectSubscription()
+                .thenAwait(Duration.ofSeconds(3))
                 .expectNextCount(6)
                 .verifyComplete();
     }

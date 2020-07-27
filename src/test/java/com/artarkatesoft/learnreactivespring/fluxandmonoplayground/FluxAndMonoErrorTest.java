@@ -95,7 +95,7 @@ public class FluxAndMonoErrorTest {
                 .just("A", "B", "C")
                 .concatWith(Flux.error(new RuntimeException("Error occurred")))
                 .concatWith(Flux.just("Unreachable"))
-                .retryWhen(Retry.backoff(2, Duration.ofSeconds(4)));
+                .retryWhen(Retry.backoff(2, Duration.ofMillis(100)));
 
         StepVerifier.create(flux.log())
                 .expectSubscription()
