@@ -1,5 +1,6 @@
 package com.artarkatesoft.learnreactivespring.controllers;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
@@ -105,4 +106,15 @@ class FluxAndMonoControllerTest {
     }
 
 
+    @Test
+    void testMono() {
+        //when
+        webTestClient.get().uri("/mono")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Integer.class)
+                .value(CoreMatchers.equalTo(123));
+
+    }
 }
