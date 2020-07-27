@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/artshishkin/learn-reactive-spring.svg?style=svg)](https://circleci.com/gh/artshishkin/learn-reactive-spring)
-
+[![codecov](https://codecov.io/gh/artshishkin/learn-reactive-spring/branch/master/graph/badge.svg)](https://codecov.io/gh/artshishkin/learn-reactive-spring)
 # Building Reactive RESTful API using Spring Boot/WebFlux
 ## Tutorial on Udemy (instructor Dilip S) 
 
