@@ -15,7 +15,7 @@ spring:
   profiles: nonprod
   data:
     mongodb:
-      host: localhost
+      host: 192.168.1.41
       port: 27017
       database: dilip_reactive
 ---

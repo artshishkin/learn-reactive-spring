@@ -5,6 +5,11 @@
 
 Author Artem Shyshkin
 
+#### To run MongoDB in Docker Container I used command:
+
+-  `docker run --name art-mongo -p 27017:27017 -v /home/art/dockerdata/mongo:/data/db -d mongo`
+- this will start docker container on `192.168.1.41`
+
 ### 1: Getting Started with the Course
 ### 2: Source Code for the course
 ### 3: Why Reactive Programming ?
@@ -17,3 +22,6 @@ Author Artem Shyshkin
 ### 10: Spring WebFlux & Netty - Execution Model
 ### 11: Overview of the Item Reactive API Application
 ### 12: Reactive Programming with DB - Hands On
+### 13: Build the Item Reactive API Endpoint - Using RestController
+
+
