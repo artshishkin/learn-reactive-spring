@@ -1,0 +1,77 @@
+package com.artarkatesoft.learnreactivespring.repositories;
+
+import com.artarkatesoft.learnreactivespring.documents.Item;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+@DataMongoTest
+class ItemReactiveRepositoryTest {
+
+    @Autowired
+    ItemReactiveRepository repository;
+    private Item defaultItem;
+
+    @BeforeEach
+    void setUp() {
+
+        List<Item> items = IntStream
+                .rangeClosed(1, 5)
+                .mapToObj(i -> new Item(null, "desc" + i, (double) (i * 111)))
+                .collect(Collectors.toList());
+        defaultItem = new Item("MyId", "SetDescr", 123.99);
+        Flux<Item> initFlux = repository.deleteAll()
+                .thenMany(Flux.fromIterable(items).concatWith(Flux.just(defaultItem)))
+                .flatMap(repository::save)
+                .doOnNext(item -> System.out.println("Inserted Item: " + item));
+        initFlux.blockLast(); //Use this ONLY in test cases
+    }
+
+    @Test
+    void getAllItems() {
+        Flux<Item> itemFlux = repository.findAll();
+
+        StepVerifier.create(itemFlux)
+                .expectSubscription()
+                .expectNextCount(6L)
+                .verifyComplete();
+    }
+
+    @Test
+    void getItemById() {
+        String defaultId = defaultItem.getId();
+        Mono<Item> itemMono = repository.findById(defaultId);
+        StepVerifier.create(itemMono)
+                .expectSubscription()
+                .expectNext(defaultItem)
+                .verifyComplete();
+    }
+
+    @Test
+    void getItemById_NextMatches() {
+        String defaultId = defaultItem.getId();
+        StepVerifier.create(repository.findById(defaultId))
+                .expectSubscription()
+                .expectNextMatches(item -> item.getDescription().equals(defaultItem.getDescription()))
+                .verifyComplete();
+    }
+
+    @Test
+    void getItemById_Absent() {
+        String absentId = "Absent ID";
+        Mono<Item> itemMono = repository.findById(absentId);
+        StepVerifier.create(itemMono)
+                .expectSubscription()
+                .expectNextCount(0)
+                .verifyComplete();
+    }
+
+}

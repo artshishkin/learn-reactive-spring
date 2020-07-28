@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class Item {
     @Id
-    private String Id;
+    private String id;
     private String description;
     private Double price;
 }
