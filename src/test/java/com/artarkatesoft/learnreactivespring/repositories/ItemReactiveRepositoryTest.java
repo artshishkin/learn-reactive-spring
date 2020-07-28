@@ -9,9 +9,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -26,13 +25,12 @@ class ItemReactiveRepositoryTest {
     @BeforeEach
     void setUp() {
 
-        List<Item> items = IntStream
+        Stream<Item> itemStream = IntStream
                 .rangeClosed(1, 5)
-                .mapToObj(i -> new Item(null, "desc" + i, (double) (i * 111)))
-                .collect(Collectors.toList());
+                .mapToObj(i -> new Item(null, "desc" + i, (double) (i * 111)));
         defaultItem = new Item("MyId", "desc4", 123.99);
         Flux<Item> initFlux = repository.deleteAll()
-                .thenMany(Flux.fromIterable(items).concatWith(Flux.just(defaultItem)))
+                .thenMany(Flux.fromStream(itemStream).concatWith(Flux.just(defaultItem)))
                 .flatMap(repository::save)
                 .doOnNext(item -> System.out.println("Inserted Item: " + item));
         initFlux.blockLast(); //Use this ONLY in test cases
