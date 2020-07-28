@@ -119,7 +119,37 @@ class ItemControllerWebFluxTest {
                 () -> assertThat(defaultItem).isEqualToIgnoringNullFields(itemToSave),
                 () -> assertThat(itemToSave.getId()).isNull()
         );
+    }
 
+    @Test
+    void deleteItem_Present() {
+        //given
+        String defaultId = defaultItem.getId();
+        given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
+        given(itemRepository.delete(any(Item.class))).willReturn(Mono.empty());
+        //when
+        webTestClient.delete().uri(ITEM_END_POINT_V1.concat("/" + defaultId))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Void.class);
 
+        //then
+        then(itemRepository).should().findById(eq(defaultItem.getId()));
+        then(itemRepository).should().delete(eq(defaultItem));
+    }
+
+    @Test
+    void deleteItem_Absent() {
+        //given
+        given(itemRepository.findById(anyString())).willReturn(Mono.empty());
+        //when
+        webTestClient.delete().uri(ITEM_END_POINT_V1.concat("/absentId"))
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .isEmpty();
+        //then
+        then(itemRepository).should().findById(eq("absentId"));
+        then(itemRepository).shouldHaveNoMoreInteractions();
     }
 }

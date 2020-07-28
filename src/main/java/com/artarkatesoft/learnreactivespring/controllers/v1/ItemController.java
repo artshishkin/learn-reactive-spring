@@ -39,4 +39,17 @@ public class ItemController {
         item.setId(null);
         return itemRepository.save(item);
     }
+
+    @DeleteMapping("{id}")
+    public Mono<ResponseEntity<Void>> deleteItem(@PathVariable String id) {
+        return itemRepository.findById(id)
+                .flatMap(item -> itemRepository.delete(item).then(Mono.just(new ResponseEntity<Void>(OK))))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+//    @DeleteMapping("{id}")
+//    public Mono<Void> deleteItem(@PathVariable String id) {
+//        return itemRepository.deleteById(id);
+//
+//    }
 }
