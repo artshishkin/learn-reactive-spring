@@ -27,7 +27,7 @@ class ItemReactiveRepositoryTest {
                 .rangeClosed(1, 5)
                 .mapToObj(i -> new Item(null, "desc" + i, (double) (i * 111)))
                 .collect(Collectors.toList());
-        defaultItem = new Item("MyId", "SetDescr", 123.99);
+        defaultItem = new Item("MyId", "desc4", 123.99);
         Flux<Item> initFlux = repository.deleteAll()
                 .thenMany(Flux.fromIterable(items).concatWith(Flux.just(defaultItem)))
                 .flatMap(repository::save)
@@ -74,4 +74,40 @@ class ItemReactiveRepositoryTest {
                 .verifyComplete();
     }
 
+    @Test
+    void getItemsByDescription_oneResult() {
+        //given
+        String description = "desc2";
+        //when
+        Flux<Item> itemFlux = repository.findAllByDescription(description);
+        //then
+        StepVerifier.create(itemFlux)
+                .expectSubscription()
+                .expectNextMatches(item->item.getDescription().equals(description))
+                .verifyComplete();
+    }
+    @Test
+    void getItemsByDescription_twoResults() {
+        //given
+        String description = "desc4";
+        //when
+        Flux<Item> itemFlux = repository.findAllByDescription(description).log("getItemsByDescription_twoResults");
+        //then
+        StepVerifier.create(itemFlux)
+                .expectSubscription()
+                .expectNextMatches(item->item.getDescription().equals(description))
+                .expectNextMatches(item->item.getDescription().equals(description))
+                .verifyComplete();
+    }
+    @Test
+    void getItemsByDescription_noResults() {
+        //given
+        String description = "Not Found Description";
+        //when
+        Flux<Item> itemFlux = repository.findAllByDescription(description);
+        //then
+        StepVerifier.create(itemFlux)
+                .expectSubscription()
+                .verifyComplete();
+    }
 }
