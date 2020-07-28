@@ -12,7 +12,6 @@ import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +48,7 @@ class ItemControllerWebFluxTest {
         repositoryFlux = Flux.fromIterable(itemsInRepo);
     }
 
+
     @Test
     void getAllItemsTest() {
         //given
@@ -67,57 +67,7 @@ class ItemControllerWebFluxTest {
     }
 
     @Test
-    void getAllItemsTest_approach2() {
-        //given
-        given(itemRepository.findAll()).willReturn(repositoryFlux);
-        //when
-        Flux<Item> itemFlux = webTestClient.get().uri(ITEM_END_POINT_V1)
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .returnResult(Item.class)
-                .getResponseBody();
-        //then
-        StepVerifier.create(itemFlux)
-                .expectNextCount(6)
-                .verifyComplete();
-        then(itemRepository).should().findAll();
-    }
-
-    @Test
-    void getOneItem_whenPresent() {
-        //given
-        given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
-        //when
-        EntityExchangeResult<Item> result = webTestClient.get().uri(ITEM_END_POINT_V1.concat("/MyId"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(Item.class)
-                .returnResult();
-        //then
-        then(itemRepository).should().findById(eq("MyId"));
-        assertThat(result.getResponseBody()).isEqualTo(defaultItem);
-    }
-
-    @Test
     void getOneItem_whenAbsent() {
-        //given
-        given(itemRepository.findById(anyString())).willReturn(Mono.empty());
-        //when
-        Flux<Item> itemFlux = webTestClient.get().uri(ITEM_END_POINT_V1.concat("/MyId"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isNotFound()
-                .returnResult(Item.class)
-                .getResponseBody();
-        //then
-        StepVerifier.create(itemFlux)
-                .verifyComplete();
-        then(itemRepository).should().findById(eq("MyId"));
-    }
- @Test
-    void getOneItem_whenAbsent_isEmpty() {
         //given
         given(itemRepository.findById(anyString())).willReturn(Mono.empty());
         //when
@@ -132,22 +82,7 @@ class ItemControllerWebFluxTest {
     }
 
     @Test
-    void getOneItem_usingJsonPath() {
-        //given
-        given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
-        //when
-        webTestClient.get().uri(ITEM_END_POINT_V1.concat("/MyId"))
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.id","MyId");
-        //then
-        then(itemRepository).should().findById(eq("MyId"));
-    }
-
-    @Test
-    void getOneItem_isEqualTo() {
+    void getOneItem_whenPresent() {
         //given
         given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
         //when

@@ -3,6 +3,7 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -21,7 +22,7 @@ import java.util.stream.IntStream;
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_END_POINT_V1;
 import static org.assertj.core.api.Assertions.assertThat;
 
-//@Disabled("too long")
+@Disabled("too long")
 @SpringBootTest
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
