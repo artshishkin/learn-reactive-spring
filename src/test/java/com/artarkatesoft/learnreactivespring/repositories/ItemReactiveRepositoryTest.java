@@ -130,4 +130,38 @@ class ItemReactiveRepositoryTest {
                         ))
                 .verifyComplete();
     }
+
+    @Test
+    void updateItemTest() {
+        //given
+        String defaultItemId = defaultItem.getId();
+        Item modifiedItem = new Item(defaultItemId, "Modified Description", 121212.12);
+        //when
+        Mono<Item> savedItemMono = repository.save(modifiedItem).log("updateItemTest");
+        //then
+        StepVerifier.create(savedItemMono)
+                .expectSubscription()
+                .assertNext(item -> assertThat(item).isEqualTo(modifiedItem))
+                .verifyComplete();
+    }
+
+    @Test
+    void updateItemByDescription() {
+        //given
+        double newPrice = 54321.12;
+        String descriptionToUpdate = "desc1";
+        //when
+        Flux<Item> itemFlux = repository.findAllByDescription(descriptionToUpdate)
+                .map(item -> {
+                    item.setPrice(newPrice);
+                    return item;
+                })
+                .flatMap(repository::save);
+        //then
+        StepVerifier.create(itemFlux)
+                .expectSubscription()
+                .expectNextMatches(item -> item.getDescription().equals(descriptionToUpdate) &&
+                        item.getPrice() == newPrice)
+                .verifyComplete();
+    }
 }
