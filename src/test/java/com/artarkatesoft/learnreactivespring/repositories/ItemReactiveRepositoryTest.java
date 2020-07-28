@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 @DataMongoTest
 class ItemReactiveRepositoryTest {
 
@@ -83,9 +86,10 @@ class ItemReactiveRepositoryTest {
         //then
         StepVerifier.create(itemFlux)
                 .expectSubscription()
-                .expectNextMatches(item->item.getDescription().equals(description))
+                .expectNextMatches(item -> item.getDescription().equals(description))
                 .verifyComplete();
     }
+
     @Test
     void getItemsByDescription_twoResults() {
         //given
@@ -95,10 +99,11 @@ class ItemReactiveRepositoryTest {
         //then
         StepVerifier.create(itemFlux)
                 .expectSubscription()
-                .expectNextMatches(item->item.getDescription().equals(description))
-                .expectNextMatches(item->item.getDescription().equals(description))
+                .expectNextMatches(item -> item.getDescription().equals(description))
+                .expectNextMatches(item -> item.getDescription().equals(description))
                 .verifyComplete();
     }
+
     @Test
     void getItemsByDescription_noResults() {
         //given
@@ -108,6 +113,23 @@ class ItemReactiveRepositoryTest {
         //then
         StepVerifier.create(itemFlux)
                 .expectSubscription()
+                .verifyComplete();
+    }
+
+    @Test
+    void insertItemTest() {
+        //given
+        Item itemToInsert = new Item(null, "Insert description", 123.45);
+        //when
+        Mono<Item> savedItemMono = repository.save(itemToInsert).log("insertItemTest");
+        //then
+        StepVerifier.create(savedItemMono)
+                .expectSubscription()
+                .assertNext(item ->
+                        assertAll(
+                                () -> assertThat(item).isEqualToIgnoringNullFields(itemToInsert),
+                                () -> assertThat(item.getId()).isNotBlank()
+                        ))
                 .verifyComplete();
     }
 }
