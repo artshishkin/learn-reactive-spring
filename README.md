@@ -14,3 +14,6 @@ Author Artem Shyshkin
 ### 7: Reactive Programming (Flux and Mono) - Hands on + JUnit Testing
 ### 8: Build the first Non Blocking RESTFUL API using Annotated Controllers
 ### 9: Build Non Blocking RESTFUL API using Functional Web
+### 10: Spring WebFlux & Netty - Execution Model
+### 11: Overview of the Item Reactive API Application
+### 12: Reactive Programming with DB - Hands On
