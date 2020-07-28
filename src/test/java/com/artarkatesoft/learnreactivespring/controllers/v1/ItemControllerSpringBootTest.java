@@ -3,7 +3,6 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -13,7 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,8 +19,9 @@ import java.util.stream.IntStream;
 
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_END_POINT_V1;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
-@Disabled("too long")
+//@Disabled("too long")
 @SpringBootTest
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
@@ -68,17 +67,58 @@ class ItemControllerSpringBootTest {
     }
 
     @Test
-    void getAllItemsTest_approach2() {
+    void getOneItem_whenAbsent() {
         //when
-        Flux<Item> itemFlux = webTestClient.get().uri(ITEM_END_POINT_V1)
+        webTestClient.get().uri(ITEM_END_POINT_V1.concat("/idEmpty"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .isEmpty();
+        //then
+
+    }
+
+    @Test
+    void getOneItem_whenPresent() {
+        //when
+        webTestClient.get().uri(ITEM_END_POINT_V1.concat("/MyId"))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
-                .returnResult(Item.class)
-                .getResponseBody();
+                .expectBody(Item.class)
+                .isEqualTo(defaultItem);
         //then
-        StepVerifier.create(itemFlux)
-                .expectNextCount(6)
-                .verifyComplete();
+    }
+
+    @Test
+    void createItem_value() {
+        //given
+        Item newItem = new Item(null, "Description New", 1234.4321);
+        //when
+        webTestClient.post().uri(ITEM_END_POINT_V1)
+                .bodyValue(newItem)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(Item.class)
+                .value(item -> assertAll(
+                        () -> assertThat(item).isEqualToIgnoringNullFields(newItem),
+                        () -> assertThat(item.getId()).isNotBlank()
+                ));
+    }
+
+    @Test
+    void createItem_jsonPath() {
+        //given
+        Item newItem = new Item(null, "Description New", 1234.4321);
+        //when
+        webTestClient.post().uri(ITEM_END_POINT_V1)
+                .bodyValue(newItem)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").isNotEmpty()
+                .jsonPath("$.description").isEqualTo(newItem.getDescription())
+                .jsonPath("$.price").isEqualTo(newItem.getPrice());
     }
 }

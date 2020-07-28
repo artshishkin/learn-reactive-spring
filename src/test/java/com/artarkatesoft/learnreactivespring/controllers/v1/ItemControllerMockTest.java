@@ -5,6 +5,8 @@ import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,8 +22,8 @@ import java.util.stream.IntStream;
 
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_END_POINT_V1;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -38,6 +40,9 @@ class ItemControllerMockTest {
     private Item defaultItem;
     private Flux<Item> repositoryFlux;
     private List<Item> itemsInRepo;
+
+    @Captor
+    ArgumentCaptor<Item> itemCaptor;
 
     @BeforeEach
     void setUp() {
@@ -97,5 +102,25 @@ class ItemControllerMockTest {
                 .isEqualTo(defaultItem);
         //then
         then(itemRepository).should().findById(eq("MyId"));
+    }
+
+    @Test
+    void createItem() {
+        //given
+        given(itemRepository.save(any(Item.class))).willReturn(Mono.just(defaultItem));
+        //when
+        webTestClient.post().uri(ITEM_END_POINT_V1)
+                .bodyValue(defaultItem)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(Item.class)
+                .isEqualTo(defaultItem);
+        //then
+        then(itemRepository).should().save(itemCaptor.capture());
+        Item itemToSave = itemCaptor.getValue();
+        assertAll(
+                () -> assertThat(defaultItem).isEqualToIgnoringNullFields(itemToSave),
+                () -> assertThat(itemToSave.getId()).isNull()
+        );
     }
 }
