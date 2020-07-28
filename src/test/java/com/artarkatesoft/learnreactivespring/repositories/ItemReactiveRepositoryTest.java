@@ -164,4 +164,43 @@ class ItemReactiveRepositoryTest {
                         item.getPrice() == newPrice)
                 .verifyComplete();
     }
+
+    @Test
+    void deleteItemById() {
+        //given
+        String defaultItemId = defaultItem.getId();
+        //when
+        Mono<Void> deletedItem = repository.deleteById(defaultItemId);
+        //then
+        StepVerifier.create(deletedItem.log())
+                .expectSubscription()
+                .verifyComplete();
+        StepVerifier.create(repository.count())
+                .expectNext(5L)
+                .verifyComplete();
+    }
+
+    @Test
+    void deleteItemsByDescription() {
+        //given
+        String descriptionToDelete = "desc4";
+        //when
+        Flux<Void> itemFlux = repository.findAllByDescription(descriptionToDelete)
+                .flatMap(repository::delete);
+        //then
+        StepVerifier.create(itemFlux.log("deleteItemsByDescription"))
+                .expectSubscription()
+                .verifyComplete();
+        StepVerifier.create(repository.count())
+                .expectNext(4L)
+                .verifyComplete();
+        StepVerifier
+                .create(
+                        repository
+                                .findAll()
+                                .map(Item::getDescription)
+                                .filter(descriptionToDelete::equals))
+                .expectSubscription()
+                .verifyComplete();
+    }
 }
