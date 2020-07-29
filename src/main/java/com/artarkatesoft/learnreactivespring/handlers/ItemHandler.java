@@ -37,4 +37,18 @@ public class ItemHandler {
         )
                 .switchIfEmpty(notFound);
     }
+
+    public Mono<ServerResponse> createItem(ServerRequest request) {
+
+        Mono<Item> itemMono = request.bodyToMono(Item.class);
+        Mono<Item> savedItemMono = itemMono
+                .flatMap(item -> {
+                    item.setId(null);
+                    return itemRepository.save(item);
+                });
+        return savedItemMono
+                .flatMap(itemSaved -> ServerResponse.created(request.uriBuilder().pathSegment(itemSaved.getId()).build())
+                        .contentType(APPLICATION_JSON)
+                        .body(fromValue(itemSaved)));
+    }
 }

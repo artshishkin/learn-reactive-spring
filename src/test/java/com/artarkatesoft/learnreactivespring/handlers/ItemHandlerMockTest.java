@@ -3,13 +3,17 @@ package com.artarkatesoft.learnreactivespring.handlers;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import com.artarkatesoft.learnreactivespring.routers.ItemRouter;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -24,9 +28,9 @@ import java.util.stream.IntStream;
 
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_FUNCTIONAL_END_POINT_V1;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -44,6 +48,9 @@ class ItemHandlerMockTest {
     private Item defaultItem;
     private Flux<Item> repositoryFlux;
     private List<Item> itemsInRepo;
+
+    @Captor
+    ArgumentCaptor<Item> itemCaptor;
 
     @BeforeEach
     void setUp() {
@@ -155,5 +162,28 @@ class ItemHandlerMockTest {
                 .isEqualTo(defaultItem);
         //then
         then(itemRepository).should().findById(eq("MyId"));
+    }
+    @Test
+    void createItem() {
+        //given
+        String defaultId = defaultItem.getId();
+        given(itemRepository.save(any(Item.class))).willReturn(Mono.just(defaultItem));
+        //when
+        webTestClient.post().uri(ITEM_FUNCTIONAL_END_POINT_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(defaultItem)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().exists(HttpHeaders.LOCATION)
+                .expectHeader().value(HttpHeaders.LOCATION, CoreMatchers.endsWith(ITEM_FUNCTIONAL_END_POINT_V1 + "/" + defaultId))
+                .expectBody(Item.class)
+                .isEqualTo(defaultItem);
+        //then
+        then(itemRepository).should().save(itemCaptor.capture());
+        Item itemToSave = itemCaptor.getValue();
+        assertAll(
+                () -> assertThat(defaultItem).isEqualToIgnoringNullFields(itemToSave),
+                () -> assertThat(itemToSave.getId()).isNull()
+        );
     }
 }
