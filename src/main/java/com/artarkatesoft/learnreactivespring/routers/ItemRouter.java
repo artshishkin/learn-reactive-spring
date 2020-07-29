@@ -22,6 +22,8 @@ public class ItemRouter {
                 .andRoute(GET(ITEM_FUNCTIONAL_END_POINT_V1 + "/{id}").and(accept(APPLICATION_JSON)),
                         handler::getOneItem)
                 .andRoute(POST(ITEM_FUNCTIONAL_END_POINT_V1).and(accept(APPLICATION_JSON)),
-                        handler::createItem);
+                        handler::createItem)
+                .andRoute(DELETE(ITEM_FUNCTIONAL_END_POINT_V1 + "/{id}"),
+                        handler::deleteItem);
     }
 }

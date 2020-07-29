@@ -51,4 +51,12 @@ public class ItemHandler {
                         .contentType(APPLICATION_JSON)
                         .body(fromValue(itemSaved)));
     }
+
+    public Mono<ServerResponse> deleteItem(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Mono<Item> itemMono = itemRepository.findById(id);
+        return itemMono.flatMap(item -> itemRepository.delete(item)
+                .then(ServerResponse.ok().contentType(APPLICATION_JSON).build()))
+                .switchIfEmpty(notFound);
+    }
 }
