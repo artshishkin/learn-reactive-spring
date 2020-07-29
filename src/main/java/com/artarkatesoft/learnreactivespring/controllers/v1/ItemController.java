@@ -4,8 +4,8 @@ import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -36,13 +36,12 @@ public class ItemController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<Item>> createItem(@RequestBody Item item, UriComponentsBuilder uriComponentsBuilder) {
+    public Mono<ResponseEntity<Item>> createItem(@RequestBody Item item, ServerHttpRequest request, UriComponentsBuilder uriComponentsBuilder) {
         item.setId(null);
         return itemRepository
                 .save(item)
                 .map(itemSaved -> ResponseEntity
-                        .created(uriComponentsBuilder.path(ITEM_END_POINT_V1 + "/{id}").buildAndExpand(itemSaved.getId()).toUri())
+                        .created(uriComponentsBuilder.uri(request.getURI()).pathSegment(itemSaved.getId()).build().toUri())
                         .body(itemSaved));
     }
 
