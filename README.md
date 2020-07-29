@@ -23,5 +23,6 @@ Author Artem Shyshkin
 ### 11: Overview of the Item Reactive API Application
 ### 12: Reactive Programming with DB - Hands On
 ### 13: Build the Item Reactive API Endpoint - Using RestController
+### 14: Build the Item Reactive API Endpoint - Using Functional Web
 
 
