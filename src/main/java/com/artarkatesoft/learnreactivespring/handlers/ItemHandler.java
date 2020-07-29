@@ -3,6 +3,7 @@ package com.artarkatesoft.learnreactivespring.handlers;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -57,6 +58,26 @@ public class ItemHandler {
         Mono<Item> itemMono = itemRepository.findById(id);
         return itemMono.flatMap(item -> itemRepository.delete(item)
                 .then(ServerResponse.ok().contentType(APPLICATION_JSON).build()))
+                .switchIfEmpty(notFound);
+    }
+
+    public Mono<ServerResponse> updateItem(ServerRequest request) {
+        String id = request.pathVariable("id");
+        Mono<Item> newItemMono = request.bodyToMono(Item.class);
+        Mono<Item> repoItemMono = itemRepository.findById(id);
+        Mono<Item> updatedItem = newItemMono
+                .flatMap(newItem ->
+                        repoItemMono.map(
+                                repoItem -> {
+                                    BeanUtils.copyProperties(newItem, repoItem);
+                                    repoItem.setId(id);
+                                    return repoItem;
+                                })
+                )
+                .flatMap(itemRepository::save);
+
+        return updatedItem
+                .flatMap(item -> ServerResponse.ok().contentType(APPLICATION_JSON).body(fromValue(item)))
                 .switchIfEmpty(notFound);
     }
 }
