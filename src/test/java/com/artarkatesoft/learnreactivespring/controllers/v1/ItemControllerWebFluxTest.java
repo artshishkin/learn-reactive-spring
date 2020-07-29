@@ -3,13 +3,13 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @WebFluxTest(controllers = ItemController.class)
 class ItemControllerWebFluxTest {
@@ -60,7 +61,7 @@ class ItemControllerWebFluxTest {
         given(itemRepository.findAll()).willReturn(repositoryFlux);
         //when
         EntityExchangeResult<List<Item>> result = webTestClient.get().uri(ITEM_END_POINT_V1)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Item.class)
@@ -77,7 +78,7 @@ class ItemControllerWebFluxTest {
         given(itemRepository.findById(anyString())).willReturn(Mono.empty());
         //when
         webTestClient.get().uri(ITEM_END_POINT_V1.concat("/idEmpty"))
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isNotFound()
                 .expectBody()
@@ -92,7 +93,7 @@ class ItemControllerWebFluxTest {
         given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
         //when
         webTestClient.get().uri(ITEM_END_POINT_V1.concat("/MyId"))
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Item.class)
@@ -152,4 +153,54 @@ class ItemControllerWebFluxTest {
         then(itemRepository).should().findById(eq("absentId"));
         then(itemRepository).shouldHaveNoMoreInteractions();
     }
+
+    @Test
+    @DisplayName("update EXISTING item")
+    void updateItem_whenPresent() {
+        //given
+        String defaultId = defaultItem.getId();
+        Item newItem = new Item("123", "New Description", 666.666);
+        Item savedItem = new Item(defaultId, "New Description", 666.666);
+
+        given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
+        given(itemRepository.save(any(Item.class))).willReturn(Mono.just(savedItem));
+
+        //when
+        webTestClient.put().uri(ITEM_END_POINT_V1 + "/{id}", defaultId)
+                .bodyValue(newItem)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Item.class)
+                .value(item -> assertAll(
+                        () -> assertThat(item.getId()).isEqualTo(defaultItem.getId()),
+                        () -> assertThat(item.getDescription()).isEqualTo(newItem.getDescription()),
+                        () -> assertThat(item.getPrice()).isEqualTo(newItem.getPrice())
+                ));
+        //then
+        then(itemRepository).should().findById(eq(defaultId));
+        then(itemRepository).should().save(eq(savedItem));
+    }
+
+    @Test
+    @DisplayName("update ABSENT item")
+    void updateItem_whenAbsent() {
+        //given
+        Item newItem = new Item("123", "New Description", 666.666);
+        given(itemRepository.findById(anyString())).willReturn(Mono.empty());
+        String updateId = "absentId";
+
+        //when
+        webTestClient.put().uri(ITEM_END_POINT_V1 + "/{id}", updateId)
+                .bodyValue(newItem)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(Void.class);
+        //then
+        then(itemRepository).should().findById(eq(updateId));
+        then(itemRepository).shouldHaveNoMoreInteractions();
+    }
+
+
 }

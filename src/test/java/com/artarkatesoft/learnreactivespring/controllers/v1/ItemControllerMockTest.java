@@ -3,6 +3,7 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @ExtendWith(MockitoExtension.class)
 class ItemControllerMockTest {
@@ -123,4 +125,55 @@ class ItemControllerMockTest {
                 () -> assertThat(itemToSave.getId()).isNull()
         );
     }
+
+
+    @Test
+    @DisplayName("update EXISTING item")
+    void updateItem_whenPresent() {
+        //given
+        String defaultId = defaultItem.getId();
+        Item newItem = new Item("123", "New Description", 666.666);
+        Item savedItem = new Item(defaultId, "New Description", 666.666);
+        String updateId = defaultId;
+
+        given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
+        given(itemRepository.save(any(Item.class))).willReturn(Mono.just(savedItem));
+
+        //when
+        webTestClient.put().uri(ITEM_END_POINT_V1 + "/{id}", updateId)
+                .bodyValue(newItem)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Item.class)
+                .value(item -> assertAll(
+                        () -> assertThat(item.getId()).isEqualTo(defaultItem.getId()),
+                        () -> assertThat(item.getDescription()).isEqualTo(newItem.getDescription()),
+                        () -> assertThat(item.getPrice()).isEqualTo(newItem.getPrice())
+                ));
+        //then
+        then(itemRepository).should().findById(eq(updateId));
+        then(itemRepository).should().save(eq(savedItem));
+    }
+
+    @Test
+    @DisplayName("update ABSENT item")
+    void updateItem_whenAbsent() {
+        //given
+        String updateId = "absentId";
+        Item newItem = new Item("123", "New Description", 666.666);
+        given(itemRepository.findById(anyString())).willReturn(Mono.empty());
+
+        //when
+        webTestClient.put().uri(ITEM_END_POINT_V1 + "/{id}", updateId)
+                .bodyValue(newItem)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(Void.class);
+        //then
+        then(itemRepository).should().findById(eq(updateId));
+        then(itemRepository).shouldHaveNoMoreInteractions();
+    }
+
 }

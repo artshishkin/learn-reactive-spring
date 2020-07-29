@@ -3,6 +3,7 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -20,6 +21,7 @@ import java.util.stream.IntStream;
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_END_POINT_V1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 //@Disabled("too long")
 @SpringBootTest
@@ -115,10 +117,48 @@ class ItemControllerSpringBootTest {
         webTestClient.post().uri(ITEM_END_POINT_V1)
                 .bodyValue(newItem)
                 .exchange()
+                //then
                 .expectStatus().isCreated()
                 .expectBody()
                 .jsonPath("$.id").isNotEmpty()
                 .jsonPath("$.description").isEqualTo(newItem.getDescription())
                 .jsonPath("$.price").isEqualTo(newItem.getPrice());
     }
+
+    @Test
+    @DisplayName("update EXISTING item")
+    void updateItem_whenPresent() {
+        //given
+        String defaultId = defaultItem.getId();
+        Item newItem = new Item("123", "New Description", 666.666);
+        Item savedItem = new Item(defaultId, "New Description", 666.666);
+        String updateId = defaultId;
+        //when
+        webTestClient.put().uri(ITEM_END_POINT_V1 + "/{id}", updateId)
+                .bodyValue(newItem)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                //then
+                .expectStatus().isOk()
+                .expectBody(Item.class)
+                .isEqualTo(savedItem);
+    }
+
+    @Test
+    @DisplayName("update ABSENT item")
+    void updateItem_whenAbsent() {
+        //given
+        String defaultId = defaultItem.getId();
+        Item newItem = new Item("123", "New Description", 666.666);
+        String updateId = "absentId";
+        //when
+        webTestClient.put().uri(ITEM_END_POINT_V1 + "/{id}", updateId)
+                .bodyValue(newItem)
+                .accept(APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody(Void.class);
+    }
+
+
 }
