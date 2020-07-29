@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
@@ -24,6 +25,8 @@ import java.util.stream.IntStream;
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_FUNCTIONAL_END_POINT_V1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -122,5 +125,35 @@ class ItemHandlerMockTest {
                 .verifyComplete();
         then(itemRepository).should().findAll();
         then(itemRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    void getOneItem_whenAbsent() {
+        //given
+        given(itemRepository.findById(anyString())).willReturn(Mono.empty());
+        //when
+        webTestClient.get().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/idEmpty"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .isEmpty();
+        //then
+        then(itemRepository).should().findById(eq("idEmpty"));
+    }
+
+    @Test
+    void getOneItem_whenPresent() {
+        //given
+        given(itemRepository.findById(anyString())).willReturn(Mono.just(defaultItem));
+        //when
+        webTestClient.get().uri(ITEM_FUNCTIONAL_END_POINT_V1.concat("/MyId"))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(Item.class)
+                .isEqualTo(defaultItem);
+        //then
+        then(itemRepository).should().findById(eq("MyId"));
     }
 }
