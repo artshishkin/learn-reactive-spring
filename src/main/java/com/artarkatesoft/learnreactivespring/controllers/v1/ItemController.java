@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -36,9 +37,13 @@ public class ItemController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Item> createItem(@RequestBody Item item) {
+    public Mono<ResponseEntity<Item>> createItem(@RequestBody Item item, UriComponentsBuilder uriComponentsBuilder) {
         item.setId(null);
-        return itemRepository.save(item);
+        return itemRepository
+                .save(item)
+                .map(itemSaved -> ResponseEntity
+                        .created(uriComponentsBuilder.path(ITEM_END_POINT_V1 + "/{id}").buildAndExpand(itemSaved.getId()).toUri())
+                        .body(itemSaved));
     }
 
     @DeleteMapping("{id}")

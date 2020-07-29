@@ -2,6 +2,7 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -109,12 +111,15 @@ class ItemControllerMockTest {
     @Test
     void createItem() {
         //given
+        String defaultId = defaultItem.getId();
         given(itemRepository.save(any(Item.class))).willReturn(Mono.just(defaultItem));
         //when
         webTestClient.post().uri(ITEM_END_POINT_V1)
                 .bodyValue(defaultItem)
                 .exchange()
                 .expectStatus().isCreated()
+                .expectHeader().exists(HttpHeaders.LOCATION)
+                .expectHeader().value(HttpHeaders.LOCATION, CoreMatchers.endsWith(ITEM_END_POINT_V1 + "/" + defaultId))
                 .expectBody(Item.class)
                 .isEqualTo(defaultItem);
         //then

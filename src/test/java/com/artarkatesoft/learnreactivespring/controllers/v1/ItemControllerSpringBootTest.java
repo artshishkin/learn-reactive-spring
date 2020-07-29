@@ -2,12 +2,14 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.EntityExchangeResult;
@@ -97,11 +99,14 @@ class ItemControllerSpringBootTest {
     void createItem_value() {
         //given
         Item newItem = new Item(null, "Description New", 1234.4321);
+        String defaultId = defaultItem.getId();
         //when
         webTestClient.post().uri(ITEM_END_POINT_V1)
                 .bodyValue(newItem)
                 .exchange()
                 .expectStatus().isCreated()
+                .expectHeader().exists(HttpHeaders.LOCATION)
+                .expectHeader().value(HttpHeaders.LOCATION, CoreMatchers.containsString(ITEM_END_POINT_V1 + "/"))
                 .expectBody(Item.class)
                 .value(item -> assertAll(
                         () -> assertThat(item).isEqualToIgnoringNullFields(newItem),
@@ -119,6 +124,8 @@ class ItemControllerSpringBootTest {
                 .exchange()
                 //then
                 .expectStatus().isCreated()
+                .expectHeader().exists(HttpHeaders.LOCATION)
+                .expectHeader().value(HttpHeaders.LOCATION, CoreMatchers.containsString(ITEM_END_POINT_V1 + "/"))
                 .expectBody()
                 .jsonPath("$.id").isNotEmpty()
                 .jsonPath("$.description").isEqualTo(newItem.getDescription())
