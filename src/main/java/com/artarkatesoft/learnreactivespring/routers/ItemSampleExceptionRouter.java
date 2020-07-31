@@ -12,9 +12,11 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 @Configuration
 public class ItemSampleExceptionRouter {
 
+    public static final String ENDPOINT_FUN_RUNTIME_EXCEPTION = "/fun/runtimeException";
+
     @Bean
     public RouterFunction<ServerResponse> itemSampleExceptionRoute(ItemSampleExceptionsHandler handler) {
-        return RouterFunctions.route(GET("/fun/runtimeException"),
+        return RouterFunctions.route(GET(ENDPOINT_FUN_RUNTIME_EXCEPTION),
                 handler::runtimeException);
     }
 }

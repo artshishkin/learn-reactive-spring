@@ -9,8 +9,11 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class ItemSampleExceptionsHandler {
+
+    static final String RUNTIME_EXCEPTION_MESSAGE = "Functional Runtime Exception occurred";
+
     public Mono<ServerResponse> runtimeException(ServerRequest request){
         log.info("in ItemSampleExceptionsHandler.runtimeException()");
-        throw new RuntimeException("Functional Runtime Exception occurred");
+        throw new RuntimeException(RUNTIME_EXCEPTION_MESSAGE);
     }
 }
