@@ -15,14 +15,14 @@ public class ControllerExceptionHandlers {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @Order(10)
     public String illegalStateExceptionHandler(IllegalStateException exception) {
-        log.error("IllegalStateException caught in ExceptionControllerAdvice:", exception);
+        log.error("IllegalStateException caught in ControllerExceptionHandlers Advice:", exception);
         return exception.getMessage();
     }
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @Order(20)
     public String runtimeExceptionHandler(RuntimeException exception) {
-        log.error("RuntimeException caught in ExceptionControllerAdvice:", exception);
+        log.error("RuntimeException caught in ControllerExceptionHandlers Advice:", exception);
         return exception.getMessage();
     }
 
@@ -45,7 +45,7 @@ public class ControllerExceptionHandlers {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @Order
     public String genericExceptionHandler(Exception exception) {
-        log.error("Exception caught in ExceptionControllerAdvice:", exception);
+        log.error("Exception caught in ControllerExceptionHandlers Advice:", exception);
         return exception.getMessage();
     }
 }

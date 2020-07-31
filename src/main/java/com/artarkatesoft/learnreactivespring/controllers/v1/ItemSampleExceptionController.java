@@ -14,23 +14,29 @@ import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM
 @Slf4j
 public class ItemSampleExceptionController {
 
+    static final String RUNTIME_EXCEPTION_MESSAGE = "Runtime Exception occurred";
+    static final String ARITHMETIC_EXCEPTION_MESSAGE = "Arithmetic Exception occurred";
+    static final String ILLEGAL_STATE_EXCEPTION_MESSAGE = "Illegal State Exception occurred";
+    static final String FILE_NOT_FOUND_EXCEPTION_MESSAGE = "File Not Found Exception occurred";
+
     @GetMapping("illegalStateException")
     public Mono<Void> illegalStateException() {
-        throw new IllegalStateException("Illegal State Exception occurred");
+        throw new IllegalStateException(ILLEGAL_STATE_EXCEPTION_MESSAGE);
     }
+
     @GetMapping("arithmeticException")
     public Mono<Void> arithmeticException() {
-        throw new ArithmeticException("Arithmetic Exception occurred");
+        throw new ArithmeticException(ARITHMETIC_EXCEPTION_MESSAGE);
     }
 
     @GetMapping("fileException")
     public Mono<Void> catchableException() throws FileNotFoundException {
-        throw new FileNotFoundException("File Not Found Exception occurred");
+        throw new FileNotFoundException(FILE_NOT_FOUND_EXCEPTION_MESSAGE);
     }
 
     @GetMapping("runtimeException")
     public Mono<Void> runtimeException() {
-        throw new RuntimeException("Runtime Exception occurred");
+        throw new RuntimeException(RUNTIME_EXCEPTION_MESSAGE);
     }
 
     @ExceptionHandler(ArithmeticException.class)
