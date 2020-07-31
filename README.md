@@ -32,3 +32,4 @@ Author Artem Shyshkin
 ---
 
 ### 16: Handling Exceptions in WebFlux - RestController
+### 17: Handling Exceptions in WebFlux - Functional Web
