@@ -3,7 +3,9 @@ package com.artarkatesoft.learnreactivespring.controllers.v1;
 import com.artarkatesoft.learnreactivespring.documents.Item;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ITEM_END_POINT_V1)
+@Slf4j
 public class ItemController {
 
     private final ItemReactiveRepository itemRepository;
@@ -77,6 +80,40 @@ public class ItemController {
                 .flatMap(itemRepository::save)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(new ResponseEntity<>(NOT_FOUND));
+    }
+
+    @GetMapping("runtimeExceptionOnly")
+    public Mono<Void> runtimeExceptionOnly() {
+        throw new RuntimeException("Runtime Exception occurred");
+    }
+
+    @GetMapping("runtimeException")
+    public Flux<Item> runtimeException() {
+        return itemRepository.findAll()
+                .log("From runtimeException")
+                .concatWith(Mono.error(new RuntimeException("Runtime Exception occurred")));
+    }
+
+//    @ExceptionHandler
+//    public Mono<ResponseEntity<String>> runtimeExceptionHandler(RuntimeException exception) {
+//        return Mono.just(exception.getMessage())
+//                .map(message -> ResponseEntity
+//                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                        .body(message));
+//    }
+
+//    @ExceptionHandler(RuntimeException.class)
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    public Mono<String> runtimeExceptionHandler(RuntimeException exception) {
+//        log.error("Exception caught in runtimeExceptionHandler: ", exception);
+//        return Mono.just(exception.getMessage());
+//    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String runtimeExceptionHandler(RuntimeException exception) {
+        log.error("Exception caught in runtimeExceptionHandler:", exception);
+        return exception.getMessage();
     }
 
 }

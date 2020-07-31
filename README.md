@@ -25,4 +25,10 @@ Author Artem Shyshkin
 ### 13: Build the Item Reactive API Endpoint - Using RestController
 ### 14: Build the Item Reactive API Endpoint - Using Functional Web
 
+---
 
+### 15: Build Non Blocking Client using WebClient 
+
+---
+
+### 16: Handling Exceptions in WebFlux - RestController
