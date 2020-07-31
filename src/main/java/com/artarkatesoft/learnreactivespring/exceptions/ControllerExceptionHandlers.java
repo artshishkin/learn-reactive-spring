@@ -26,6 +26,21 @@ public class ControllerExceptionHandlers {
         return exception.getMessage();
     }
 
+//    @ExceptionHandler
+//    public Mono<ResponseEntity<String>> runtimeExceptionHandler(RuntimeException exception) {
+//        return Mono.just(exception.getMessage())
+//                .map(message -> ResponseEntity
+//                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                        .body(message));
+//    }
+
+//    @ExceptionHandler(RuntimeException.class)
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    public Mono<String> runtimeExceptionHandler(RuntimeException exception) {
+//        log.error("Exception caught in runtimeExceptionHandler: ", exception);
+//        return Mono.just(exception.getMessage());
+//    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @Order
