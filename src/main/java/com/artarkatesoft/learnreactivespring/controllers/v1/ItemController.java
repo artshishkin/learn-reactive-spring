@@ -13,6 +13,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.FileNotFoundException;
+
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_END_POINT_V1;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -87,6 +89,20 @@ public class ItemController {
         throw new RuntimeException("Runtime Exception occurred");
     }
 
+    @GetMapping("illegalStateException")
+    public Mono<Void> illegalStateException() {
+        throw new IllegalStateException("Illegal State Exception occurred");
+    }
+    @GetMapping("arithmeticException")
+    public Mono<Void> arithmeticException() {
+        throw new ArithmeticException("Arithmetic Exception occurred");
+    }
+
+    @GetMapping("fileException")
+    public Mono<Void> catchableException() throws FileNotFoundException {
+        throw new FileNotFoundException("File Not Found Exception occurred");
+    }
+
     @GetMapping("runtimeException")
     public Flux<Item> runtimeException() {
         return itemRepository.findAll()
@@ -109,10 +125,10 @@ public class ItemController {
 //        return Mono.just(exception.getMessage());
 //    }
 
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(ArithmeticException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String runtimeExceptionHandler(RuntimeException exception) {
-        log.error("Exception caught in runtimeExceptionHandler:", exception);
+    public String arithmeticExceptionHandler(RuntimeException exception) {
+        log.error("ArithmeticException caught in arithmeticExceptionHandler:", exception);
         return exception.getMessage();
     }
 
