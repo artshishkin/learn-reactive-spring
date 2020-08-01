@@ -1,5 +1,6 @@
 package com.artarkatesoft.learnreactivespring.routers;
 
+import com.artarkatesoft.learnreactivespring.handlers.ItemCappedHandler;
 import com.artarkatesoft.learnreactivespring.handlers.ItemHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ public class ItemRouter {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> itemStreamRoute(ItemHandler handler) {
+    public RouterFunction<ServerResponse> itemStreamRoute(ItemCappedHandler handler) {
         return RouterFunctions.route(GET(ITEM_STREAM_FUNCTIONAL_END_POINT_V1), handler::streamItems);
     }
 }
