@@ -1,15 +1,19 @@
 package com.artarkatesoft.learnreactivespring.handlers;
 
 import com.artarkatesoft.learnreactivespring.documents.Item;
+import com.artarkatesoft.learnreactivespring.documents.ItemCapped;
+import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveCappedRepository;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_STREAM_JSON;
 import static org.springframework.web.reactive.function.BodyInserters.fromValue;
 
 @Component
@@ -17,6 +21,7 @@ import static org.springframework.web.reactive.function.BodyInserters.fromValue;
 public class ItemHandler {
 
     private final ItemReactiveRepository itemRepository;
+    private final ItemReactiveCappedRepository itemCappedRepository;
 
     private static Mono<ServerResponse> notFound = ServerResponse.notFound().build();
 
@@ -79,5 +84,10 @@ public class ItemHandler {
         return updatedItem
                 .flatMap(item -> ServerResponse.ok().contentType(APPLICATION_JSON).body(fromValue(item)))
                 .switchIfEmpty(notFound);
+    }
+
+    public Mono<ServerResponse> streamItems(ServerRequest request) {
+        Flux<ItemCapped> itemCappedFlux = itemCappedRepository.findAllBy();
+        return ServerResponse.ok().contentType(APPLICATION_STREAM_JSON).body(itemCappedFlux, ItemCapped.class);
     }
 }

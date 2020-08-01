@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_FUNCTIONAL_END_POINT_V1;
+import static com.artarkatesoft.learnreactivespring.constants.ItemConstants.ITEM_STREAM_FUNCTIONAL_END_POINT_V1;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 
@@ -27,5 +28,10 @@ public class ItemRouter {
                         handler::deleteItem)
                 .andRoute(PUT(ITEM_FUNCTIONAL_END_POINT_V1 + "/{id}"),
                         handler::updateItem);
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> itemStreamRoute(ItemHandler handler) {
+        return RouterFunctions.route(GET(ITEM_STREAM_FUNCTIONAL_END_POINT_V1), handler::streamItems);
     }
 }
