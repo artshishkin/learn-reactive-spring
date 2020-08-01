@@ -1,10 +1,13 @@
 package com.artarkatesoft.learnreactivespring.bootstrap;
 
 import com.artarkatesoft.learnreactivespring.documents.Item;
+import com.artarkatesoft.learnreactivespring.documents.ItemCapped;
 import com.artarkatesoft.learnreactivespring.repositories.ItemReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.core.CollectionOptions;
+import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -18,10 +21,18 @@ import java.util.stream.Stream;
 public class ItemDataInitializer implements CommandLineRunner {
 
     private final ItemReactiveRepository repository;
+    private final ReactiveMongoOperations mongoOperations;
 
     @Override
     public void run(String... args) throws Exception {
         bootstrapItemData();
+        createCappedCollection();
+    }
+
+    private void createCappedCollection() {
+        mongoOperations.dropCollection(ItemCapped.class);
+        mongoOperations.createCollection(ItemCapped.class, CollectionOptions.empty()
+                .maxDocuments(20).size(50000).capped());
     }
 
     private void bootstrapItemData() {
