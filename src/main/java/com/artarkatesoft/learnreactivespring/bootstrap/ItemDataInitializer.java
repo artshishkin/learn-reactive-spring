@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.CollectionOptions;
 import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -31,21 +32,26 @@ public class ItemDataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         bootstrapItemData();
-        createCappedCollection();
-        dataSetUpForCappedCollection();
+        Mono<Void> collectionCreated = createCappedCollection();
+        dataSetUpForCappedCollection(collectionCreated);
     }
 
-    private void createCappedCollection() {
-        mongoOperations.dropCollection(ItemCapped.class);
-        mongoOperations.createCollection(ItemCapped.class, CollectionOptions.empty()
-                .maxDocuments(20).size(50000).capped());
+    private Mono<Void> createCappedCollection() {
+        return mongoOperations.dropCollection(ItemCapped.class)
+                .then(mongoOperations
+                        .createCollection(ItemCapped.class, CollectionOptions.empty()
+                                .maxDocuments(20).size(50000).capped()).log("createCappedCollection")
+                )
+                .then(Mono.empty());
     }
 
-    private void dataSetUpForCappedCollection() {
-        Flux.interval(Duration.ofSeconds(1))
+    private void dataSetUpForCappedCollection(Mono<Void> collectionCreated) {
+        collectionCreated
+                .thenMany(Flux.interval(Duration.ofSeconds(1)))
                 .map(i -> new ItemCapped(null, "Item Capped Description" + i, 100.0 + 1.1 * i))
                 .flatMap(itemCappedRepository::insert)
                 .subscribe(item -> log.info("Inserted item is {}", item));
+
     }
 
     private void bootstrapItemData() {
